@@ -22,3 +22,40 @@ INSERT INTO blobs_tags(blob,tag) SELECT b.last_value, t.id FROM blobs_id_seq b, 
 INSERT INTO blobs_tags(blob,tag) SELECT b.last_value, t.id FROM blobs_id_seq b, tags t WHERE t.tag='rehab' ON CONFLICT(blob,tag) DO NOTHING;
 COMMIT;
 
+====
+
+create blob from <file> [with tags <tag1> <tag2> <tag3>]
+[un]tag blob <id> with <tag1> <tag2> <tag3>
+list blobs
+list tags
+describe blob <id>
+describe tag <tag>
+drop blob <id>
+
+====
+
+help [<command>]
+
+acquire <mimetype> [stuff]
+describe [stuff] <id>
+forget [stuff] <id>
+
+[un]label [stuff] <id> [<label>...]
+describe label <label>
+
+list [stuff|labels]
+
+====
+
+acquire
+recover <ID>
+forget <ID>
+set <ID> mime <MIME>
+set <ID> extension <EXTENSION>
+list [mimes|extension|labels]
+describe <ID>
+[un]label <ID> <LABEL1> [<LABEL2> ...]
+describe mime|ext|label <LABEL>
+
+====
+
