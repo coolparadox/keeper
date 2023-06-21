@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-echo "BEGIN;"
-echo "SELECT id,size FROM blob ORDER BY blob.id;"
-echo "COMMIT;"
-

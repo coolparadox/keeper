@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+echo "SELECT id,size FROM blob ORDER BY blob.id;" | \
+psql -b -t -q --csv -U postgres keeper | \
+sed 's/,/ /g'

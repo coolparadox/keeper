@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 WHEREAMI=$(dirname $0)
-$WHEREAMI/acquire2sql | psql -b -t -q --csv -U postgres keeper
+$WHEREAMI/acquire2sql | \
+psql -b -t -q --csv -U postgres keeper
