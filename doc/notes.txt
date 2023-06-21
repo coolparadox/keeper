@@ -1,21 +1,29 @@
+dropdb -U postgres keeper
 createdb -U postgres keeper
 psql -U postgres keeper
 
-CREATE TABLE mimes(id SERIAL PRIMARY KEY, mime text NOT NULL UNIQUE);
-CREATE TABLE blobs(id SERIAL PRIMARY KEY, mime integer REFERENCES mimes(id), modified date NOT NULL, size integer NOT NULL, filename text);
-CREATE TABLE chunks(id SERIAL PRIMARY KEY, chunk text NOT NULL UNIQUE);
-CREATE TABLE blobs_chunks(blob integer REFERENCES blobs(id), chunk integer REFERENCES chunks(id), seq integer NOT NULL, PRIMARY KEY(blob, chunk, seq));
-CREATE TABLE tags(id SERIAL PRIMARY KEY, tag text NOT NULL UNIQUE, CONSTRAINT tag_asciii CHECK(tag ~ '^[[:ascii:]]+$'), CONSTRAINT tag_nonblank CHECK(tag ~ '^[^[:space:]]+$'));
-CREATE TABLE blobs_tags(blob integer REFERENCES blobs(id), tag integer REFERENCES tags(id), PRIMARY KEY(blob, tag));
+BEGIN;
+CREATE TABLE blob(id SERIAL PRIMARY KEY, size integer NOT NULL);
+CREATE TABLE mime(id SERIAL PRIMARY KEY, mime text NOT NULL UNIQUE);
+CREATE TABLE blob_attr(blob_id integer UNIQUE NOT NULL REFERENCES blob(id), mime_id integer REFERENCES mime(id), file_extension text, modified_date date);
+CREATE TABLE chunk(id SERIAL PRIMARY KEY, value text NOT NULL UNIQUE);
+CREATE TABLE blob_chunk(blob_id integer REFERENCES blob(id), piece_index integer NOT NULL, chunk_id integer REFERENCES chunk(id), PRIMARY KEY(blob_id, piece_index));
+CREATE TABLE label(id SERIAL PRIMARY KEY, value varchar(256) NOT NULL UNIQUE, CONSTRAINT label_ascii CHECK(value ~ '^[[:ascii:]]+$'), CONSTRAINT label_nonblank CHECK(value ~ '^[^[:space:]]+$'));
+CREATE TABLE blob_label(blob_id integer REFERENCES blob(id), label_id integer REFERENCES label(id), PRIMARY KEY(blob_id, label_id));
+COMMIT;
+
+./src/acquire2sql | psql -b -t -A -q -U postgres keeper
 
 BEGIN;
-INSERT INTO mimes(mime) VALUES('application/pdf') ON CONFLICT(mime) DO NOTHING;
-INSERT INTO blobs(mime,modified,size,filename) SELECT m.id,'2023-06-08',252073,'lorandi.mm' FROM mimes m WHERE m.mime='application/pdf';
+INSERT INTO mime(mime) VALUES('application/pdf') ON CONFLICT(mime) DO NOTHING;
+INSERT INTO blob(mime,modified,size) SELECT m.id,'2023-06-08',252073 FROM mime m WHERE m.mime='application/pdf';
 CREATE TEMPORARY SEQUENCE blobs_chunks_seq_seq AS integer;
-INSERT INTO chunks(chunk) VALUES('SGVsbG8gd29ybGQhCg==') ON CONFLICT(chunk) DO NOTHING;
-INSERT INTO blobs_chunks(blob,chunk,seq) SELECT b.last_value, c.id, nextval('blobs_chunks_seq_seq') FROM blobs_id_seq b, chunks c WHERE c.chunk='SGVsbG8gd29ybGQhCg==';
-INSERT INTO chunks(chunk) VALUES('SGkgdGhlcmUuLi4K') ON CONFLICT(chunk) DO NOTHING;
-INSERT INTO blobs_chunks(blob,chunk,seq) SELECT b.last_value, c.id, nextval('blobs_chunks_seq_seq') FROM blobs_id_seq b, chunks c WHERE c.chunk='SGkgdGhlcmUuLi4K';
+INSERT INTO chunk(chunk) VALUES('SGVsbG8gd29ybGQhCg==') ON CONFLICT(chunk) DO NOTHING;
+INSERT INTO blob_chunk(blob,chunk,seq) SELECT b.last_value, c.id,
+nextval('blobs_chunks_seq_seq') FROM blobs_id_seq b, chunk c WHERE c.chunk='SGVsbG8gd29ybGQhCg==';
+INSERT INTO chunk(chunk) VALUES('SGkgdGhlcmUuLi4K') ON CONFLICT(chunk) DO NOTHING;
+INSERT INTO blob_chunk(blob,chunk,seq) SELECT b.last_value, c.id,
+nextval('blobs_chunks_seq_seq') FROM blobs_id_seq b, chunk c WHERE c.chunk='SGkgdGhlcmUuLi4K';
 DROP SEQUENCE blobs_chunks_seq_seq;
 INSERT INTO tags(tag) VALUES('jasper') ON CONFLICT(tag) DO NOTHING;
 INSERT INTO blobs_tags(blob,tag) SELECT b.last_value, t.id FROM blobs_id_seq b, tags t WHERE t.tag='jasper' ON CONFLICT(blob,tag) DO NOTHING;
@@ -48,14 +56,14 @@ list [stuff|labels]
 ====
 
 acquire
+catalog
 recover <ID>
 forget <ID>
 set <ID> mime <MIME>
 set <ID> extension <EXTENSION>
-list [mimes|extension|labels]
-describe <ID>
+set <ID> date <DATE>
 [un]label <ID> <LABEL1> [<LABEL2> ...]
-describe mime|ext|label <LABEL>
+describe [mime|ext|date|label] <TEXT>
 
 ====
 

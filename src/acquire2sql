@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ME=$(basename $0)
+
+CHUNK_SIZE=256
+
+CLUTTER_LIST=""
+cleanup() { test -z "$CLUTTER_LIST" || rm -rf $CLUTTER_LIST ; }
+trap cleanup EXIT
+clutterize() { CLUTTER_LIST+=" $*" ; }
+in_dir() { pushd $1 >/dev/null ; shift ; eval $* ; popd 1>/dev/null ; }
+
+CHUNK_DIR=$(mktemp -dt "${ME}.XXXXXXXXXX") ; clutterize $CHUNK_DIR
+in_dir $CHUNK_DIR split -d -a10 -b $CHUNK_SIZE -
+BLOB_SIZE=$(du -b $CHUNK_DIR | sed 's/[^[:digit:]].*//')
+
+echo "BEGIN;"
+echo "CREATE TEMPORARY SEQUENCE blob_chunk_piece_index_seq AS integer;"
+echo "INSERT INTO blob(size) VALUES($BLOB_SIZE);"
+
+find $CHUNK_DIR -mindepth 1 -maxdepth 1 -type f | sort | while read F ; do
+    CHUNK=$(base64 -w0 $F)
+    echo "INSERT INTO chunk(value) VALUES('$CHUNK') ON CONFLICT(value) DO NOTHING;"
+    echo "INSERT INTO blob_chunk(blob_id,piece_index,chunk_id) SELECT b.last_value,nextval('blob_chunk_piece_index_seq'),c.id FROM blob_id_seq b,chunk c WHERE c.value='$CHUNK';"
+done
+
+echo "DROP SEQUENCE blob_chunk_piece_index_seq;"
+echo "SELECT last_value FROM blob_id_seq;"
+echo "COMMIT;"
+
