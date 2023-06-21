@@ -12,7 +12,7 @@ CREATE TABLE label(id SERIAL PRIMARY KEY, value varchar(256) NOT NULL UNIQUE, CO
 CREATE TABLE blob_label(blob_id integer REFERENCES blob(id), label_id integer REFERENCES label(id), PRIMARY KEY(blob_id, label_id));
 COMMIT;
 
-./src/acquire2sql | psql -b -t -A -q -U postgres keeper
+./src/acquire2sql | psql -b -t -q --csv -U postgres keeper
 
 BEGIN;
 INSERT INTO mime(mime) VALUES('application/pdf') ON CONFLICT(mime) DO NOTHING;
