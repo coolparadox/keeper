@@ -14,8 +14,10 @@ SPOT_BASE_NAME=$(cksum -a sha1 --untagged -b --debug "$ACQ_PATH" | sed -e 's/ .*
 SPOT_DIR="$SPOTS_DIR/$SPOT_SIZE_SUBDIR"
 SPOT_BASE_PATH="$SPOT_DIR/${SPOT_BASE_NAME}"
 BLOB_PATH="${SPOT_BASE_PATH}.gz"
+echo ${SPOT_SIZE_SUBDIR//\//}/$SPOT_BASE_NAME
 if test -e "$BLOB_PATH" ; then
     gzip -dc "$BLOB_PATH" | cmp -s "$ACQ_PATH" - || fail "the 'impossible' happened!"
+    fail "already acquired"
 else
     mkdir -p "$SPOT_DIR"
     BLOB_PATH_TMP="${BLOB_PATH}.tmp"
@@ -32,4 +34,3 @@ modified $(stat --printf='%Y' $ACQ_PATH)
 name $(basename "$ACQ_PATH")
 __eod__
 mv -f "$LABEL_PATH_TMP" "$LABEL_PATH"
-echo "$SPOT_SIZE_SUBDIR/$SPOT_BASE_NAME"
