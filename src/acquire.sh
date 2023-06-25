@@ -27,10 +27,11 @@ fi
 LABEL_PATH="${SPOT_BASE_PATH}.label"
 touch "$LABEL_PATH"
 LABEL_PATH_TMP="${LABEL_PATH}.tmp"
+MODIFIED_EPOCH=$(stat --printf='%Y' $ACQ_PATH)
 sort -u "$LABEL_PATH" - >"$LABEL_PATH_TMP" <<__eod__
-acquired $(date '+%s')
-mime $(file --brief --mime-type $ACQ_PATH)
-modified $(stat --printf='%Y' $ACQ_PATH)
-name $(basename "$ACQ_PATH")
+acquired:$(date -u +%F)
+filename:$(basename "$ACQ_PATH")
+mimetype:$(file --brief --mime-type $ACQ_PATH)
+modified:$(date -ud "@$MODIFIED_EPOCH" +%F)
 __eod__
 mv -f "$LABEL_PATH_TMP" "$LABEL_PATH"
