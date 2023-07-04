@@ -5,34 +5,38 @@ WHEREAMI=$(dirname $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME [-c|--common]"; exit 1; }
+usage() { echo "usage: $ME [-a|--all] [-c|--common]"; exit 1; }
+IS_ALL=false
 IS_COMMON=false
 while test $# -ne 0 ; do
     case $1 in
+        -a|--all) shift ; IS_ALL=true ;;
         -c|--common) shift ; IS_COMMON=true ;;
         *) usage ;;
     esac
 done
 test $# -eq 0 || usage
-while read OID ; do
+if $IS_ALL ; then
+    $WHEREAMI/catalog.sh -a
+else
+    cat
+fi | while read OID ; do
     echo -n "$KEEPDB/spot/"
     echo $OID | tr '/' '\n' | sed '1s/./&\//g' | tr -d '\n'
     echo '.label'
-done | if $IS_COMMON ; then
-    IS_PRIMED=false
+done | {
     TMP_LABELS=$(mktemp -t "${ME}.XXXXXXXXXX")
     TMP_AUX=$(mktemp -t "${ME}.XXXXXXXXXX")
+    IS_PRIMED=false
     while read LABEL_FILE ; do
         $IS_PRIMED || { IS_PRIMED=true ; cat $LABEL_FILE >$TMP_LABELS ; continue ; }
-        comm -12 $TMP_LABELS $LABEL_FILE >$TMP_AUX
+        if $IS_COMMON ; then
+            comm -12 $TMP_LABELS $LABEL_FILE >$TMP_AUX
+        else
+            sort --merge --uniq $TMP_LABELS $LABEL_FILE >$TMP_AUX
+        fi
         cat $TMP_AUX >$TMP_LABELS
     done
-    rm -f $TMP_AUX
     cat $TMP_LABELS
-    rm -f $TMP_LABELS
-else
-    TMP_LABEL_FILES=$(mktemp -t "${ME}.XXXXXXXXXX")
-    tr '\n' '\000' >$TMP_LABEL_FILES
-    sort --merge --uniq --files0-from=$TMP_LABEL_FILES
-    rm -f $TMP_LABEL_FILES
-fi
+    rm -f $TMP_AUX $TMP_LABELS
+}
