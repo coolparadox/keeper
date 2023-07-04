@@ -8,5 +8,4 @@ usage() { echo "usage: $ME"; exit 1; }
 test $# -eq 0 || usage
 cd "$KEEPDB/spot"
 find -type f -name '*.gz' | \
-sed -r -e 's/^\.*//' -e 's/\..*//' -e 's/\/([^\/]*)$/.\1/' -e 's/\///g' -e 's/\./\//' | \
-sort
+sed -r -e 's/^\.*//' -e 's/\..*//' -e 's/\/([^\/]*)$/.\1/' -e 's/\///g' -e 's/\./\//'
