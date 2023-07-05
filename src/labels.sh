@@ -5,7 +5,7 @@ WHEREAMI=$(dirname $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME [-c|--common]"; exit 1; }
+usage() { echo "usage: $ME [-c|--common] <OID..."; exit 1; }
 IS_COMMON=false
 while test $# -ne 0 ; do
     case $1 in
