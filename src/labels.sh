@@ -5,22 +5,17 @@ WHEREAMI=$(dirname $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME [-a|--all] [-c|--common]"; exit 1; }
-IS_ALL=false
+usage() { echo "usage: $ME [-c|--common]"; exit 1; }
 IS_COMMON=false
 while test $# -ne 0 ; do
     case $1 in
-        -a|--all) shift ; IS_ALL=true ;;
         -c|--common) shift ; IS_COMMON=true ;;
         *) usage ;;
     esac
 done
 test $# -eq 0 || usage
-if $IS_ALL ; then
-    $WHEREAMI/catalog.sh -a
-else
-    cat
-fi | while read OID ; do
+sed 's/  */\n/g' | \
+while read OID ; do
     echo -n "$KEEPDB/spot/"
     echo $OID | tr '/' '\n' | sed '1s/./&\//g' | tr -d '\n'
     echo '.label'
