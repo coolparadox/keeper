@@ -4,7 +4,7 @@ ME=$(basename $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME SRC_FILE"; exit 1; }
+usage() { echo "usage: $ME SRC_FILE" >&2; exit 1; }
 test $# -eq 1 || usage
 ACQ_PATH=$1
 ACQ_SIZE=$(stat --printf='%s' "$ACQ_PATH")

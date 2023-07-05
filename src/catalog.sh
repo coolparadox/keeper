@@ -4,7 +4,7 @@ ME=$(basename $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME <REGEX..."; exit 1; }
+usage() { echo "usage: $ME <REGEX..." >&2; exit 1; }
 test $# -eq 0 || usage
 TMP_PATTERNS=$(mktemp -t "${ME}.XXXXXXXXXX")
 sed 's/  */\n/g' >$TMP_PATTERNS
