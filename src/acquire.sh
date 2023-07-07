@@ -7,19 +7,28 @@ test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
 usage() {
     cat >&2 <<__eod__
 usage: $ME SRC_FILE...
-usage: $ME <SRC_FILES_LIST
+usage: $ME [-0|--null] <SRC_FILES_LIST
 __eod__
     exit 1
 }
-FILES_FROM_STDIN=false
-if test $# -eq 0 ; then
-    FILES_FROM_STDIN=true
-else
+FILES_FROM_STDIN=true
+IS_NULL_SEPARATOR=false
+while test $# -ne 0 ; do
     case "$1" in
+        -0|--null)
+            shift
+            test $# -eq 0 || usage
+            IS_NULL_SEPARATOR=true
+            ;;
         -*) usage ;;
+        *) FILES_FROM_STDIN=false ; break ;;
     esac
-fi
-if $FILES_FROM_STDIN ; then cat ; else for F in $@ ; do echo $F ; done ; fi | \
+done
+if $FILES_FROM_STDIN ; then
+    if $IS_NULL_SEPARATOR ; then tr '\000' '\n' ; else cat ; fi
+else
+    for F in $@ ; do echo $F ; done
+fi | \
 while read ACQ_PATH ; do
     ACQ_SIZE=$(stat --printf='%s' "$ACQ_PATH")
     SPOTS_DIR="$KEEPDB/spot"
@@ -42,11 +51,11 @@ while read ACQ_PATH ; do
     LABEL_PATH="${SPOT_BASE_PATH}.label"
     touch "$LABEL_PATH"
     LABEL_PATH_TMP="${LABEL_PATH}.tmp"
-    MODIFIED_EPOCH=$(stat --printf='%Y' $ACQ_PATH)
+    MODIFIED_EPOCH=$(stat --printf='%Y' "$ACQ_PATH")
     sort -u "$LABEL_PATH" - >"$LABEL_PATH_TMP" <<__eod__
 acquired:$(date -u +%F)
 filename:$(basename "$ACQ_PATH" | sed 's/ /_/g')
-mimetype:$(file --brief --mime-type $ACQ_PATH)
+mimetype:$(file --brief --mime-type "$ACQ_PATH")
 modified:$(date -ud "@$MODIFIED_EPOCH" +%F)
 __eod__
     mv -f "$LABEL_PATH_TMP" "$LABEL_PATH"
