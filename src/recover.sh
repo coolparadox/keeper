@@ -4,7 +4,7 @@ ME=$(basename $0)
 fail() { echo "${ME}: error: $*" >&2 ; exit 1 ; }
 test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
-usage() { echo "usage: $ME [-C|--dir DIR] [-f|--force] <OID..."; exit 1; }
+usage() { echo "usage: $ME [-C|--dir DIR] [-f|--force] <<<OID..."; exit 1; }
 IS_FORCE=false
 RECOVER_DIR=$PWD
 while test $# -ne 0 ; do

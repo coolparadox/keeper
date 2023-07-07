@@ -7,7 +7,7 @@ test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
 usage() {
     cat >&2 <<__eod__
 usage: $ME SRC_FILE...
-usage: $ME <LIST_OF_SRC_FILES
+usage: $ME <SRC_FILES_LIST
 __eod__
     exit 1
 }
