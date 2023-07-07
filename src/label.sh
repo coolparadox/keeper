@@ -7,8 +7,8 @@ test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
 usage() {
     cat >&2 <<__eod__
-usage: $ME [-q|--query] [-c|--common] <<<OID...
-usage: $ME -a|--add LABEL... <<<OID...
+usage: $ME [-c|--common] <<<OID...
+usage: $ME LABEL... <<<OID...
 usage: $ME -d|--drop LABEL... <<<OID...
 __eod__
     exit 1
@@ -18,11 +18,10 @@ IS_DROP=false
 IS_COMMON=false
 while test $# -ne 0 ; do
     case $1 in
-        -q|--query) shift ;;
         -c|--common) shift ; IS_COMMON=true ;;
-        -a|--add) shift ; IS_ADD=true ; break ;;
         -d|--drop) shift ; IS_DROP=true ; break ;;
-        *) usage ;;
+        -*) usage ;;
+        *) IS_ADD=true ; break ;;
     esac
 done
 TMP_ARG_LABELS=''
