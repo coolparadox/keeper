@@ -7,7 +7,7 @@ test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
 usage() {
     cat >&2 <<__eod__
 usage: $ME <<<LABEL_REGEX...
-usage: $ME -l|--latest
+usage: $ME -l|--latest-acquired
 __eod__
     exit 1
 }
