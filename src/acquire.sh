@@ -50,4 +50,4 @@ mimetype:$(file --brief --mime-type $ACQ_PATH)
 modified:$(date -ud "@$MODIFIED_EPOCH" +%F)
 __eod__
     mv -f "$LABEL_PATH_TMP" "$LABEL_PATH"
-done
+done | tee "$KEEPDB/latest_oids"
