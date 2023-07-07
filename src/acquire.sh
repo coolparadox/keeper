@@ -27,7 +27,7 @@ done
 if $FILES_FROM_STDIN ; then
     if $IS_NULL_SEPARATOR ; then tr '\000' '\n' ; else cat ; fi
 else
-    for F in $@ ; do echo $F ; done
+    for F in "$@" ; do echo $F ; done
 fi | \
 while read ACQ_PATH ; do
     ACQ_SIZE=$(stat --printf='%s' "$ACQ_PATH")
