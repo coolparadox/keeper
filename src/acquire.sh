@@ -6,22 +6,36 @@ test -v KEEPDB || fail "missing KEEPDB environment variable"
 test -d "$KEEPDB" || fail "missing KEEPDB directory '$KEEPDB'"
 usage() {
     cat >&2 <<__eod__
-usage: $ME SRC_FILE...
-usage: $ME [-0|--null] <SRC_FILES_LIST
+usage: $ME [-d|--delete-src] [--] SRC_FILE...
+usage: $ME [-d|--delete-src] [-0|--null] <SRC_FILES_LIST
 __eod__
     exit 1
 }
 FILES_FROM_STDIN=true
 IS_NULL_SEPARATOR=false
+KEEP_SRC=true
 while test $# -ne 0 ; do
     case "$1" in
+        -d|--delete-src)
+            shift
+            KEEP_SRC=false
+            ;;
         -0|--null)
             shift
-            test $# -eq 0 || usage
             IS_NULL_SEPARATOR=true
             ;;
-        -*) usage ;;
-        *) FILES_FROM_STDIN=false ; break ;;
+        --)
+            shift
+            FILES_FROM_STDIN=false
+            break
+            ;;
+        -*)
+            usage
+            ;;
+        *)
+            FILES_FROM_STDIN=false
+            break
+            ;;
     esac
 done
 if $FILES_FROM_STDIN ; then
@@ -59,4 +73,5 @@ mimetype:$(file --brief --mime-type "$ACQ_PATH")
 modified:$(date -ud "@$MODIFIED_EPOCH" +%F)
 __eod__
     mv -f "$LABEL_PATH_TMP" "$LABEL_PATH"
+    $KEEP_SRC || rm -f "$ACQ_PATH"
 done | tee "$KEEPDB/latest_oids"
