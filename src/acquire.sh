@@ -55,7 +55,7 @@ while read ACQ_PATH ; do
     echo $OID
     if test -e "$BLOB_PATH" ; then
         gzip -dc "$BLOB_PATH" | cmp -s "$ACQ_PATH" - || fail "the 'impossible' happened!"
-        echo "${ME}: warning: already exists: $OID" >&2
+        echo "${ME}: notice: already exists: $OID" >&2
     else
         mkdir -p "$SPOT_DIR"
         BLOB_PATH_TMP="${BLOB_PATH}.tmp"
