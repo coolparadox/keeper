@@ -26,7 +26,7 @@ while read OID ; do
 done | while read OID PREFIX ; do
     cd "$RECOVER_DIR"
     LABEL_FILE="${PREFIX}.label"
-    FILENAME=$(sed -e '/^filename:/!d' -e 's/^[^:]*://' "$LABEL_FILE")
+    FILENAME=$(sed -e '/^filename:/!d' -e 's/^[^:]*://' -e 'q' "$LABEL_FILE")
     test -n "$FILENAME" || fail "missing 'filename:...' label in $OID"
     test ! -e "$FILENAME" || {
         if $IS_SKIP ; then
